@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.deploy/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+github-token.txt
+login-password.txt
+access-code.txt
+node_modules/

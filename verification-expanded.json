@@ -1,0 +1,493 @@
+{
+  "region": "us-east-1",
+  "results": [
+    {
+      "scenario": "agent_chain",
+      "model": "us.anthropic.claude-opus-4-8",
+      "optimized": false,
+      "system": "必须依次调用 get_order、get_policy、calculate_refund，以工具结果中的地区和金额为依据，最后回答。",
+      "requestFields": {},
+      "rounds": [
+        {
+          "round": 1,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 699,
+            "outputTokens": 74,
+            "totalTokens": 773,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "ff914e81-a230-475b-be03-3fa7797d6323",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:40 GMT",
+              "content-type": "application/json",
+              "content-length": "516",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "ff914e81-a230-475b-be03-3fa7797d6323"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 2,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 832,
+            "outputTokens": 69,
+            "totalTokens": 901,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "bde8645e-7279-473c-b02d-cd6e78c94d9a",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:41 GMT",
+              "content-type": "application/json",
+              "content-length": "498",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "bde8645e-7279-473c-b02d-cd6e78c94d9a"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 3,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 926,
+            "outputTokens": 127,
+            "totalTokens": 1053,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "33300b9c-0cea-4290-a90f-d5069d483ac2",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:43 GMT",
+              "content-type": "application/json",
+              "content-length": "561",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "33300b9c-0cea-4290-a90f-d5069d483ac2"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 4,
+          "stopReason": "end_turn",
+          "usage": {
+            "inputTokens": 1084,
+            "outputTokens": 297,
+            "totalTokens": 1381,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "c2521869-2b0d-43cd-9e07-4ed6b5bbaecd",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:48 GMT",
+              "content-type": "application/json",
+              "content-length": "1060",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "c2521869-2b0d-43cd-9e07-4ed6b5bbaecd"
+            },
+            "RetryAttempts": 0
+          }
+        }
+      ],
+      "reasoningBlocks": 0,
+      "signedReasoningBlocks": 0,
+      "api": "Converse",
+      "text": "查询结果如下：\n\n**订单 A100 信息**\n- 状态：配送延迟\n- 地区：CN（中国）\n- 运费：15\n- 延迟时长：72 小时\n\n**退款政策（CN 地区）**\n- 延迟阈值：48 小时\n- 是否需要审批：是\n\n**退款资格计算**\n- 延迟 72 小时 ≥ 阈值 48 小时，符合退款条件\n- 可申请运费金额：**15**\n\n**重要说明**\n⚠️ 该订单目前 **尚未获得退款批准**（`refund_approved: false`），且该地区政策要求必须经过审批。因此**退款尚未执行**，我不能说已退款。\n\n**结论**：您符合申请 **15 元运费退款**的资格，但需要先提交审批。审批通过后才能执行退款。是否需要我协助您提交退款审批申请？",
+      "stopReason": "end_turn",
+      "checks": {
+        "按依赖顺序调用并传递真实参数": true,
+        "完整结束（截断场景预期不通过）": true
+      },
+      "seconds": 10.06,
+      "usage": {
+        "inputTokens": 3541,
+        "outputTokens": 567
+      },
+      "trace": [
+        {
+          "round": 1,
+          "id": "tooluse_nV0Q8V61anJbrT9viisrcF",
+          "name": "get_order",
+          "input": {
+            "order_id": "A100"
+          },
+          "output": {
+            "order_id": "A100",
+            "status": "配送延迟",
+            "refund_approved": false,
+            "region": "CN",
+            "shipping": 15,
+            "delay_hours": 72
+          },
+          "ok": true
+        },
+        {
+          "round": 2,
+          "id": "tooluse_BS08x4pSDM5eUyYKLA515W",
+          "name": "get_policy",
+          "input": {
+            "region": "CN"
+          },
+          "output": {
+            "threshold_hours": 48,
+            "approval_required": true
+          },
+          "ok": true
+        },
+        {
+          "round": 3,
+          "id": "tooluse_VKR9CoceDtWchwJfIsa6Ju",
+          "name": "calculate_refund",
+          "input": {
+            "shipping": 15,
+            "delay_hours": 72,
+            "threshold_hours": 48
+          },
+          "output": {
+            "eligible_amount": 15,
+            "executed": false,
+            "approval_required": true
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "agent_chain",
+      "model": "us.openai.gpt-5.6-sol",
+      "optimized": true,
+      "system": "必须依次调用 get_order、get_policy、calculate_refund，以工具结果中的地区和金额为依据，最后回答。\n不要猜工具参数。上一步完成才能构造下一步参数；退款计算只是资格评估，不是执行退款。",
+      "requestFields": {},
+      "rounds": [
+        {
+          "round": 1,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 189,
+            "outputTokens": 20,
+            "totalTokens": 209,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "857ace78-9736-4ed5-85ee-f9b277db1f85",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:38 GMT",
+              "content-type": "application/json",
+              "content-length": "415",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "857ace78-9736-4ed5-85ee-f9b277db1f85"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 2,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 262,
+            "outputTokens": 18,
+            "totalTokens": 280,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "a814ab73-e833-4dcc-be34-d2d4d30f6430",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:39 GMT",
+              "content-type": "application/json",
+              "content-length": "412",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "a814ab73-e833-4dcc-be34-d2d4d30f6430"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 3,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 304,
+            "outputTokens": 29,
+            "totalTokens": 333,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "ddda6edc-00ee-4331-a31b-be541097a672",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:40 GMT",
+              "content-type": "application/json",
+              "content-length": "456",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "ddda6edc-00ee-4331-a31b-be541097a672"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 4,
+          "stopReason": "end_turn",
+          "usage": {
+            "inputTokens": 364,
+            "outputTokens": 65,
+            "totalTokens": 429,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "511df4f1-af09-4f68-bc44-c8722a9afb4f",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:41 GMT",
+              "content-type": "application/json",
+              "content-length": "515",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "511df4f1-af09-4f68-bc44-c8722a9afb4f"
+            },
+            "RetryAttempts": 0
+          }
+        }
+      ],
+      "reasoningBlocks": 0,
+      "signedReasoningBlocks": 0,
+      "api": "Converse",
+      "text": "订单 A100 查询结果：\n\n- 地区：CN\n- 配送延迟：72 小时\n- 政策门槛：48 小时\n- 可申请运费退款：15\n- 需要审批：是\n- 当前状态：尚未批准，未执行退款",
+      "stopReason": "end_turn",
+      "checks": {
+        "按依赖顺序调用并传递真实参数": true,
+        "完整结束（截断场景预期不通过）": true
+      },
+      "seconds": 2.729,
+      "usage": {
+        "inputTokens": 1119,
+        "outputTokens": 132
+      },
+      "trace": [
+        {
+          "round": 1,
+          "id": "call_a23bb7fbb967541382a80c24124262fc",
+          "name": "get_order",
+          "input": {
+            "order_id": "A100"
+          },
+          "output": {
+            "order_id": "A100",
+            "status": "配送延迟",
+            "refund_approved": false,
+            "region": "CN",
+            "shipping": 15,
+            "delay_hours": 72
+          },
+          "ok": true
+        },
+        {
+          "round": 2,
+          "id": "call_dbd909bb127f545283ea622a1416d14a",
+          "name": "get_policy",
+          "input": {
+            "region": "CN"
+          },
+          "output": {
+            "threshold_hours": 48,
+            "approval_required": true
+          },
+          "ok": true
+        },
+        {
+          "round": 3,
+          "id": "call_c443388c8c635c1098a69e12e2679cb1",
+          "name": "calculate_refund",
+          "input": {
+            "shipping": 15,
+            "threshold_hours": 48,
+            "delay_hours": 72
+          },
+          "output": {
+            "eligible_amount": 15,
+            "executed": false,
+            "approval_required": true
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "thinking_tools",
+      "model": "us.anthropic.claude-opus-4-8",
+      "optimized": false,
+      "system": "必须调用 get_order，再根据结果给出简短结论。",
+      "requestFields": {
+        "thinking": {
+          "type": "enabled",
+          "budget_tokens": 1024
+        }
+      },
+      "rounds": [],
+      "reasoningBlocks": 0,
+      "signedReasoningBlocks": 0,
+      "api": "Converse",
+      "error": "An error occurred (ValidationException) when calling the Converse operation: The model returned the following errors: \"thinking.type.enabled\" is not supported for this model. Use \"thinking.type.adaptive\" and \"output_config.effort\" to control thinking behavior.",
+      "errorDetails": {
+        "Message": "The model returned the following errors: \"thinking.type.enabled\" is not supported for this model. Use \"thinking.type.adaptive\" and \"output_config.effort\" to control thinking behavior.",
+        "Code": "ValidationException"
+      },
+      "seconds": 0.196,
+      "usage": {
+        "inputTokens": 0,
+        "outputTokens": 0
+      },
+      "trace": []
+    },
+    {
+      "scenario": "thinking_tools",
+      "model": "us.openai.gpt-5.6-sol",
+      "optimized": true,
+      "system": "必须调用 get_order，再根据结果给出简短结论。\n只依据工具事实回答，不把退款资格当作批准。",
+      "requestFields": {},
+      "rounds": [
+        {
+          "round": 1,
+          "stopReason": "tool_use",
+          "usage": {
+            "inputTokens": 91,
+            "outputTokens": 20,
+            "totalTokens": 111,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "8a1a84a6-1644-4caf-b7aa-51e61d34c68f",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:39 GMT",
+              "content-type": "application/json",
+              "content-length": "414",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "8a1a84a6-1644-4caf-b7aa-51e61d34c68f"
+            },
+            "RetryAttempts": 0
+          }
+        },
+        {
+          "round": 2,
+          "stopReason": "end_turn",
+          "usage": {
+            "inputTokens": 164,
+            "outputTokens": 15,
+            "totalTokens": 179,
+            "cacheReadInputTokens": 0,
+            "cacheWriteInputTokens": 0
+          },
+          "metadata": {
+            "RequestId": "e5cdbf15-41fe-4ba7-9e19-c6d795ef8a1e",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:39 GMT",
+              "content-type": "application/json",
+              "content-length": "354",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "e5cdbf15-41fe-4ba7-9e19-c6d795ef8a1e"
+            },
+            "RetryAttempts": 0
+          }
+        }
+      ],
+      "reasoningBlocks": 0,
+      "signedReasoningBlocks": 0,
+      "api": "Converse",
+      "text": "订单 A100 的退款**尚未批准**。",
+      "stopReason": "end_turn",
+      "checks": {
+        "成功执行查询工具": true,
+        "完整结束（截断场景预期不通过）": true
+      },
+      "seconds": 1.157,
+      "usage": {
+        "inputTokens": 255,
+        "outputTokens": 35
+      },
+      "trace": [
+        {
+          "round": 1,
+          "id": "call_faca70504e2057c2b22ad4faf5d6d5d6",
+          "name": "get_order",
+          "input": {
+            "order_id": "A100"
+          },
+          "output": {
+            "order_id": "A100",
+            "status": "配送延迟",
+            "refund_approved": false,
+            "region": "CN",
+            "shipping": 15,
+            "delay_hours": 72
+          },
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "stream",
+      "model": "us.openai.gpt-5.6-sol",
+      "optimized": true,
+      "system": "用中文简洁回答。\n涵盖 API、工具协议、质量回归。",
+      "requestFields": {},
+      "rounds": [
+        {
+          "round": 1,
+          "stopReason": "end_turn",
+          "usage": {
+            "inputTokens": 39,
+            "outputTokens": 64,
+            "totalTokens": 103
+          },
+          "metadata": {
+            "RequestId": "01921493-b728-4843-bd55-97743ebbecb1",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+              "date": "Sun, 20 Sep 2026 07:44:39 GMT",
+              "content-type": "application/vnd.amazon.eventstream",
+              "transfer-encoding": "chunked",
+              "connection": "keep-alive",
+              "x-amzn-requestid": "01921493-b728-4843-bd55-97743ebbecb1"
+            },
+            "RetryAttempts": 0
+          }
+        }
+      ],
+      "reasoningBlocks": 0,
+      "signedReasoningBlocks": 0,
+      "api": "ConverseStream",
+      "streamEvents": 45,
+      "firstTextSeconds": 0.656,
+      "text": "检查 API 参数、返回格式与错误码是否兼容。  \n验证工具调用协议、权限和超时机制。  \n回归测试核心任务的质量、稳定性与性能。",
+      "stopReason": "end_turn",
+      "checks": {
+        "有文本输出（非语义评分）": true,
+        "完整结束（截断场景预期不通过）": true
+      },
+      "seconds": 0.977,
+      "usage": {
+        "inputTokens": 39,
+        "outputTokens": 64
+      },
+      "trace": []
+    }
+  ]
+}

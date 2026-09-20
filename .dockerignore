@@ -1,0 +1,10 @@
+*
+!app.py
+!scenarios.py
+!requirements.txt
+!Dockerfile
+
+!api_adapters.py
+
+!openai_adapters.py
+!migration_config.py

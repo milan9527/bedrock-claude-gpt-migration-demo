@@ -1,0 +1,94 @@
+{
+  "model": "us.anthropic.claude-opus-4-8",
+  "optimized": false,
+  "system": "必须调用 get_order，再根据结果给出简短结论。",
+  "requestFields": {
+    "thinking": {
+      "type": "adaptive"
+    },
+    "output_config": {
+      "effort": "medium"
+    }
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "stopReason": "tool_use",
+      "usage": {
+        "inputTokens": 428,
+        "outputTokens": 80,
+        "totalTokens": 508,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0
+      },
+      "metadata": {
+        "RequestId": "1fc18d6b-2102-4d5e-a729-ec33769e11d4",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+          "date": "Sun, 20 Sep 2026 07:44:46 GMT",
+          "content-type": "application/json",
+          "content-length": "913",
+          "connection": "keep-alive",
+          "x-amzn-requestid": "1fc18d6b-2102-4d5e-a729-ec33769e11d4"
+        },
+        "RetryAttempts": 0
+      }
+    },
+    {
+      "round": 2,
+      "stopReason": "end_turn",
+      "usage": {
+        "inputTokens": 567,
+        "outputTokens": 81,
+        "totalTokens": 648,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0
+      },
+      "metadata": {
+        "RequestId": "55967b19-d6ec-45a4-be2e-9da7f56f2ca7",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+          "date": "Sun, 20 Sep 2026 07:44:48 GMT",
+          "content-type": "application/json",
+          "content-length": "527",
+          "connection": "keep-alive",
+          "x-amzn-requestid": "55967b19-d6ec-45a4-be2e-9da7f56f2ca7"
+        },
+        "RetryAttempts": 0
+      }
+    }
+  ],
+  "reasoningBlocks": 1,
+  "signedReasoningBlocks": 1,
+  "api": "Converse",
+  "text": "根据查询结果，订单 A100 的退款**尚未批准**（refund_approved: false）。当前订单状态为\"配送延迟\"，已延迟 72 小时。\n\n如需退款，建议进一步联系客服跟进处理。",
+  "stopReason": "end_turn",
+  "checks": {
+    "成功执行查询工具": true,
+    "完整结束（截断场景预期不通过）": true
+  },
+  "seconds": 3.903,
+  "usage": {
+    "inputTokens": 995,
+    "outputTokens": 161
+  },
+  "trace": [
+    {
+      "round": 1,
+      "id": "tooluse_nYC83Mu2zWfkrTuPqIbIyT",
+      "name": "get_order",
+      "input": {
+        "order_id": "A100"
+      },
+      "output": {
+        "order_id": "A100",
+        "status": "配送延迟",
+        "refund_approved": false,
+        "region": "CN",
+        "shipping": 15,
+        "delay_hours": 72
+      },
+      "ok": true
+    }
+  ]
+}

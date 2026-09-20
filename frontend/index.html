@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bedrock 模型迁移实验室</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#e5edf8;background:#0b1220;color-scheme:dark}
+body{max-width:1440px;margin:auto;padding:32px}h1{font-size:30px;margin-bottom:8px}p{color:#a9bbd4;line-height:1.7}
+.badge{color:#7fe3c5;font:12px monospace;letter-spacing:2px}.panel,article{background:#131f32;border:1px solid #2a3c55;border-radius:14px;padding:22px;margin-top:20px}
+.row,.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}label{display:block;font-size:14px;color:#a9bbd4}
+input,select,textarea,button{font:inherit;border-radius:8px;padding:12px;border:1px solid #354b69}
+input,select,textarea{background:#0c1626;width:100%;box-sizing:border-box;margin:8px 0 16px}textarea{min-height:125px;resize:vertical}
+button{background:#73dfbf;color:#062b23;cursor:pointer;font-weight:600;margin-right:8px}button.secondary{background:#22324b;color:#dce8fb}
+button:disabled{opacity:.45;cursor:wait}pre{white-space:pre-wrap;word-break:break-word;line-height:1.7;font:14px/1.7 system-ui}
+small,.meta{color:#a9bbd4}.error{color:#ffaaa6}.metric{color:#7fe3c5;font-size:13px}details{margin-top:14px}summary{cursor:pointer;font-size:13px}
+@media(max-width:900px){.row,.results{grid-template-columns:1fr}body{padding:18px}}
+
+[hidden]{display:none!important}
+:root{background:#f3f6fb;color:#182940;color-scheme:light;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+body{max-width:1480px;padding:28px 40px 60px}p,label,small,.meta{color:#52647c}.badge{color:#137b79;font-weight:700;letter-spacing:1.5px}
+header{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:10px 0 24px;border-bottom:1px solid #dce4ee}h1{font-size:32px;letter-spacing:-1px;margin:10px 0}header p{margin:0;max-width:830px}
+#account{display:flex;align-items:center;gap:14px;white-space:nowrap}#signedIn{background:#e3f4ec;color:#176a4b;padding:8px 14px;border-radius:24px;font-size:13px}#logout{margin:0;padding:8px 12px}
+.panel,article{background:white;border:1px solid #dfe6f0;box-shadow:0 5px 20px #20395805;border-radius:16px;padding:26px}h2{font-size:19px;margin:0 0 16px}h3{font-size:16px;margin:0 0 16px;color:#253b59}
+input,select,textarea{background:#fff;border:1px solid #ccd7e5;color:#182940}input:focus,select:focus,textarea:focus{outline:3px solid #dcecff;border-color:#3787da}textarea{font-size:14px;line-height:1.6}
+button{background:#176bca;color:white;border-color:#176bca;transition:background .15s}button:hover{background:#1157a7}button.secondary{background:#fff;color:#355574;border-color:#ccd7e5}button.secondary:hover{background:#edf4fb}
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0}.config-card{background:#f7f9fd;border:1px solid #e1e8f2;border-radius:12px;padding:20px}.config-card .row{grid-template-columns:1fr 1fr}.config-card textarea{min-height:65px}
+#loginPanel{max-width:420px;margin:64px auto}#loginButton{width:100%}#status{padding:14px 16px;background:#edf4fd;border-radius:9px}#compatibility:not(:empty){background:#fff5df;color:#855b16;padding:12px 16px;border-radius:9px}
+#endpoint,#catalogInfo,#routing{font-size:12px;overflow-wrap:anywhere}.metric{color:#187a73}.error{color:#b73131}article{min-width:0;border-top:3px solid #2789bc}article pre{max-height:420px;overflow:auto;background:#f7f9fc;padding:14px;border-radius:8px}article p:empty{display:none}.advice{background:#fff7e7;border-left:3px solid #df9f38;padding:12px;font-size:13px;line-height:1.8}.result-state{font-size:12px;font-weight:600;color:#176a4b;margin-bottom:14px}.result-state.failed{color:#b73131}details{padding:12px 0}summary{color:#365e89}#results{align-items:start}
+@media(max-width:1050px){.results{grid-template-columns:1fr}body{padding:20px}.row{grid-template-columns:1fr}.config-card .row{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){header{align-items:flex-start;flex-direction:column}.config-grid,.config-card .row{grid-template-columns:1fr}.panel{padding:18px}h1{font-size:27px}#account{align-self:flex-end}}
+</style>
+<body>
+<header><div><div class="badge">AMAZON BEDROCK · US-EAST-1</div>
+<h1>模型迁移实验室</h1>
+<p>选择迁移前后的模型，用相同输入比较基线、直接替换和提示词及参数适配后的结果。</p>
+</div><div id="account" hidden><span id="signedIn"></span><button id="logout" class="secondary">注销</button></div></header>
+<section class="panel" id="loginPanel" style="max-width:420px;margin:48px auto">
+<h2>登录实验室</h2>
+<form id="loginForm">
+<label>用户名<input id="username" name="username" autocomplete="username" required maxlength="128"></label>
+<label>密码<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="2048"></label>
+<button id="loginButton" type="submit">登录</button>
+<p id="loginStatus" role="status"></p>
+</form>
+</section>
+<main id="workspace" hidden>
+
+<section class="panel">
+<h2>配置迁移实验</h2>
+<div class="row">
+<label>迁移组合<select id="preset"><option value="custom">自定义组合（从完整目录选择）</option><option value="sol">Claude Opus 4.8 → GPT-5.6 Sol</option><option value="astra">Claude Fable 5.1 → GPT-6 Astra</option></select></label>
+<label>迁移前模型<select id="source"></select></label>
+<label>迁移后模型<select id="target"></select></label>
+</div>
+<div class="row"><label>迁移前 API<select id="sourceApi"></select></label><label>迁移后 API<select id="targetApi"></select></label></div>
+<p>两端均使用 Bedrock Runtime，可独立选择 Converse、InvokeModel、Responses、Chat Completions。后两者调用独立 HTTP / SSE 接口。所有组进行必要的协议字段转换；直接替换组保留源提示词和附加参数。本版不调用 Mantle endpoint。</p>
+<p id="catalogInfo"></p>
+<p id="endpoint"></p>
+<p id="compatibility" role="status"></p>
+<button id="connect" class="secondary">刷新模型目录</button>
+<label>演示场景<select id="scenario"></select></label>
+<div class="config-grid"><section class="config-card"><h3>迁移前 · 基线配置</h3><p class="meta" id="sourceMapping"></p><div class="row">
+<label>最大输出 tokens<input id="sourceMaxTokens" type="number" min="1" max="32768" step="1" placeholder="场景默认"></label>
+<label>Temperature<input id="sourceTemperature" type="number" min="0" max="2" step="0.1" placeholder="模型默认"></label>
+<label>Top P<input id="sourceTopP" type="number" min="0" max="1" step="0.05" placeholder="模型默认"></label>
+<label>传输方式<select id="sourceStream"><option value="default">场景默认</option><option value="false">非流式</option><option value="true">流式 / SSE</option></select></label>
+<label>输出校验<select id="sourceOutputCheck"><option value="default">场景内置检查</option><option value="text">追加非空文本检查</option><option value="json">追加合法 JSON 检查</option></select></label>
+<label>原生参数预设<select id="sourceNativePreset"><option value="">选择并填入高级 JSON</option><option value="default">清空附加参数</option><option value="reasoning">推理参数示例</option><option value="json">JSON 输出格式示例</option></select></label></div>
+<label>停止序列（JSON 数组；留空沿用场景，[] 清空）<textarea id="sourceStops" placeholder='["END"]'></textarea></label></section><section class="config-card"><h3>迁移后 · 适配配置</h3><p class="meta" id="targetMapping"></p><div class="row">
+<label>最大输出 tokens<input id="targetMaxTokens" type="number" min="1" max="32768" step="1" placeholder="场景默认"></label>
+<label>Temperature<input id="targetTemperature" type="number" min="0" max="2" step="0.1" placeholder="模型默认"></label>
+<label>Top P<input id="targetTopP" type="number" min="0" max="1" step="0.05" placeholder="模型默认"></label>
+<label>传输方式<select id="targetStream"><option value="default">场景默认</option><option value="false">非流式</option><option value="true">流式 / SSE</option></select></label>
+<label>输出校验<select id="targetOutputCheck"><option value="default">场景内置检查</option><option value="text">追加非空文本检查</option><option value="json">追加合法 JSON 检查</option></select></label>
+<label>原生参数预设<select id="targetNativePreset"><option value="">选择并填入高级 JSON</option><option value="default">清空附加参数</option><option value="reasoning">推理参数示例</option><option value="json">JSON 输出格式示例</option></select></label></div>
+<label>停止序列（JSON 数组；留空沿用场景，[] 清空）<textarea id="targetStops" placeholder='["END"]'></textarea></label></section></div><p class="meta">基线和直接替换组使用迁移前配置，适配组使用迁移后配置。参数范围因模型而异；留空沿用场景或模型默认。输出校验不会强制生成对应格式；原生参数示例需确认模型支持。工具场景请使用非流式。</p><details id="advanced"><summary>模型参数兼容性设置（JSON；Converse 附加字段 / InvokeModel / Responses / Chat Completions 顶层字段）</summary>
+<p>直接替换组原样使用源模型参数；适配组使用目标参数。推理场景默认探测 Claude enabled thinking；部分模型需要其他模式，报错会保留。目标默认 {}，不代表开启了等价推理能力。</p>
+<label>源推理参数快捷设置<select id="thinkingPreset"><option value="">手动编辑 / 选择模式</option><option value="enabled">enabled + budget 1024（旧式兼容性探测）</option><option value="adaptive">adaptive + medium effort（已验证 Opus 4.8）</option><option value="default">清空附加参数（模型默认行为）</option></select></label>
+<div class="row"><label>源模型附加参数<textarea id="sourceFields">{}</textarea></label><label>适配后目标模型附加参数<textarea id="targetFields">{}</textarea></label></div></details>
+<label>输入内容<textarea id="input" maxlength="12000"></textarea></label>
+<details id="contextBox" hidden><summary>查看固定检索资料</summary><pre id="context"></pre></details>
+<p id="routing"></p>
+<button id="run" disabled>运行三组对比</button><button class="secondary" id="export" disabled>导出 JSON 报告</button>
+<p id="status" role="status">正在读取账户模型目录…</p>
+<small>每次运行调用三组真实模型，产生 Bedrock 推理费用。工具使用本地样例订单。自动检查仅覆盖格式和执行过程，回答质量需要人工核验。</small>
+</section>
+<section class="results" id="results"></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let catalog, report;
+async function api(path, options) {
+ const response=await fetch(path,{...options,credentials:"same-origin"}), data=await response.json();
+ if(response.status===401)showLogin();
+ if(!response.ok) throw Error(data.error||response.statusText);
+ return data;
+}
+function option(select,value,label){const node=document.createElement('option');node.value=value;node.textContent=label;select.append(node)}
+function mapping(side){
+ const api=$(side+'Api').value, claude=$(side).value.includes('anthropic.');
+ const token=api==='converse'?'inferenceConfig.maxTokens':api==='responses'?'max_output_tokens':api==='invoke'&&claude?'max_tokens':'max_completion_tokens';
+ $(side+'Mapping').textContent=`${api} · token 参数 → ${token} · Top P → ${api==='converse'?'topP':'top_p'}`;
+}
+function readConfig(side){
+ const config={};
+ for(const [suffix,key] of [['MaxTokens','maxTokens'],['Temperature','temperature'],['TopP','topP']]){
+  const el=$(side+suffix);if(!el.checkValidity())throw Error(`${side==='source'?'迁移前':'迁移后'} ${key} 超出允许范围`);
+  if(el.value!=='')config[key]=Number(el.value);
+ }
+ if($(side+'Stream').value!=='default')config.stream=$(side+'Stream').value==='true';
+ config.outputCheck=$(side+'OutputCheck').value;
+ if($(side+'Stops').value.trim())config.stopSequences=parseFields(side+'Stops','停止序列');
+ return config;
+}
+function parseFields(id,label){try{return JSON.parse($(id).value)}catch(e){throw Error(label+' JSON 格式错误：请检查双引号、逗号和括号。'+e.message)}}
+for(const side of ['source','target'])$(side+'NativePreset').onchange=()=>{
+ const mode=$(side+'NativePreset').value;if(!mode)return;
+ const api=$(side+'Api').value,claude=$(side).value.includes('anthropic.');let fields={};
+ if(mode==='reasoning')fields=claude?{thinking:{type:'adaptive'},output_config:{effort:'medium'}}:api==='responses'?{reasoning:{effort:'medium'}}:{reasoning_effort:'medium'};
+ if(mode==='json'){
+  if(claude || api==='converse'){$('status').textContent='此预设仅适用于 GPT InvokeModel / Chat / Responses。请选择 JSON 输出校验，并根据当前模型文档在高级 JSON 中配置原生约束。';$(side+'NativePreset').value='';return}
+  fields=api==='responses'?{text:{format:{type:'json_object'}}}:{response_format:{type:'json_object'}};
+ }
+ $(side+'Fields').value=JSON.stringify(fields,null,2);$('advanced').open=true;
+ $('status').textContent='已填入参数示例。请确认模型支持，JSON 模式还需要提示词要求输出 JSON。';
+};
+function routing(){
+ for(const side of ['source','target'])mapping(side);
+ $('routing').textContent=['source','target'].map(id=>{
+  const m=catalog.models.find(x=>x.id===$(id).value);
+  return m?`${id==='source'?'迁移前':'迁移后'}路由区域：${m.regions.join('、')}`:'';
+ }).join('；');
+ $('compatibility').textContent=['source','target'].map(id=>{
+  const model=$(id).value, api=$(id+'Api').value;
+  const side=id==='source'?'迁移前':'迁移后';
+  if(api==='chat' && ['us.anthropic.claude-opus-4-8','us.anthropic.claude-fable-5-1'].includes(model))
+   return `${side}：${model} 在 us-east-1 Runtime Chat Completions 实测返回 model_not_found（2026-09-20）。建议选择 Converse / InvokeModel；仍可运行兼容性探测。`;
+  if(['chat','responses'].includes(api))
+   return `${side}：目录可见不代表支持 ${api==='chat'?'Chat Completions':'Responses'}；兼容性以当前端点实测为准。`;
+  return '';
+ }).filter(Boolean).join(' ');
+}
+function preset(){
+ const ids=$('preset').value==='sol'?['us.anthropic.claude-opus-4-8','us.openai.gpt-5.6-sol']:
+ ['us.anthropic.claude-fable-5-1','us.openai.gpt-6-astra'];
+ if($('preset').value!=='custom'){
+  const available=ids.every(id=>catalog.models.some(m=>m.id===id));
+  if(available){$('source').value=ids[0];$('target').value=ids[1]}
+  $('status').textContent=available?'就绪。目录可见不代表已验证全部场景支持。':'该预设在当前目录中不完整，请选择可用模型。';
+ }
+ routing();
+}
+function scenario(){
+ const s=catalog.scenarios[$('scenario').value];$('input').value=s.input;
+ $('sourceFields').value=JSON.stringify(s.thinking?{thinking:{type:'enabled',budget_tokens:1024}}:{},null,2);$('targetFields').value='{}';
+ $('contextBox').hidden=!s.context;$('context').textContent=s.context||'';
+ $('thinkingPreset').value='';
+ for(const side of ['source','target']){
+  for(const suffix of ['MaxTokens','Temperature','TopP','Stops'])$(side+suffix).value='';
+  $(side+'MaxTokens').placeholder=String(s.max_tokens||(s.thinking?4096:1024));
+  $(side+'Stream').value='default';$(side+'OutputCheck').value='default';$(side+'NativePreset').value='';
+ }
+}
+$('thinkingPreset').onchange=()=>{
+ const mode=$('thinkingPreset').value;
+ if(!mode)return;
+ $('sourceFields').value=JSON.stringify(mode==='enabled'?{thinking:{type:'enabled',budget_tokens:1024}}:mode==='adaptive'?{thinking:{type:'adaptive'},output_config:{effort:'medium'}}:{},null,2);
+};
+function render(r,i){
+ const node=document.createElement('article');
+ const state=document.createElement('div');state.className='result-state'+(r.error||Object.values(r.checks||{}).includes(false)?' failed':'');state.textContent=r.error?'调用失败':Object.values(r.checks||{}).includes(false)?'调用完成 · 检查未全部通过':'调用完成 · 检查通过';node.append(state);
+ for(const [tag,text,cls] of [
+  ['h2',['源模型基线','目标模型直接替换','目标模型提示词 / 参数适配'][i]],
+  ['p',r.model,'meta'],
+  ['p',`${r.api} · ${r.wireFormat}`,'meta'],
+  ['p',`${r.seconds}s · 输入 ${r.usage.inputTokens} / 输出 ${r.usage.outputTokens} tokens`,'metric'],
+  ['pre',r.error||r.text,r.error?'error':''],
+  ['p',r.errorHint||'','error'],
+  ['p',r.stopReason?`停止原因：${r.stopReason}`:'','meta'],
+  ['p',r.completionNote||'','meta'],
+  ['p',(r.adaptationNotes||[]).join('；'),'meta'],
+  ['p',Object.entries(r.checks||{}).map(([k,v])=>`${k}：${v?'通过':'未通过'}`).join('；'),'meta']]){
+  const el=document.createElement(tag);el.textContent=text;el.className=cls||'';node.append(el);
+ }
+ if(r.suggestions?.length){const box=document.createElement('div');box.className='advice';const title=document.createElement('strong');title.textContent='调整建议';box.append(title);for(const tip of r.suggestions){const p=document.createElement('p');p.textContent=tip;box.append(p)}node.append(box)}
+ const details=document.createElement('details'), title=document.createElement('summary'), raw=document.createElement('pre');
+ title.textContent='查看参数、轮次、推理统计和工具轨迹';raw.textContent=JSON.stringify({effectiveConfig:r.effectiveConfig,suggestions:r.suggestions,api:r.api,apiFamily:r.apiFamily,endpoint:r.endpoint,wireFormat:r.wireFormat,requestFields:r.requestFields,adaptationNotes:r.adaptationNotes,system:r.system,rounds:r.rounds,reasoningBlocks:r.reasoningBlocks,signedReasoningBlocks:r.signedReasoningBlocks,firstTextSeconds:r.firstTextSeconds,streamEvents:r.streamEvents,errorDetails:r.errorDetails,trace:r.trace},null,2);
+ details.append(title,raw);node.append(details);$('results').append(node);
+}
+$('preset').onchange=preset;
+for(const id of ['source','target']) $(id).onchange=()=>{$('preset').value='custom';routing()};
+for(const id of ['sourceApi','targetApi']) $(id).onchange=routing;
+$('scenario').onchange=scenario;
+$('run').onclick=async()=>{
+ $('run').disabled=true;$('export').disabled=true;$('results').replaceChildren();
+ $('status').textContent='正在运行三组请求，工具场景可能需要多轮调用…';
+ try{
+  let job=await api('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   source:$('source').value,target:$('target').value,sourceApi:$('sourceApi').value,targetApi:$('targetApi').value,scenario:$('scenario').value,input:$('input').value,sourceConfig:readConfig('source'),targetConfig:readConfig('target'),sourceFields:parseFields('sourceFields','源附加参数'),targetFields:parseFields('targetFields','目标附加参数')
+  })});
+  while(job.status==='running'){
+   await new Promise(resolve=>setTimeout(resolve,2000));
+   job=await api('/api/jobs/'+job.id);
+  }
+  if(job.status!=='completed')throw Error(job.error||'任务失败');
+  report=job.report;
+  report.results.forEach(render);$('export').disabled=false;
+  $('status').textContent='对比结束。延迟为单组总耗时，包含重试及工具往返；流式场景在详情显示首文本延迟，浏览器在整组完成后展示结果。';
+ }catch(e){$('status').textContent=e.message}
+ finally{$('run').disabled=false}
+};
+$('export').onclick=()=>{
+ const url=URL.createObjectURL(new Blob([JSON.stringify(report,null,2)],{type:'application/json'}));
+ const a=document.createElement('a');a.href=url;a.download='bedrock-migration-report.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+async function loadCatalog(){
+ try{
+  $('source').replaceChildren();$('target').replaceChildren();$('scenario').replaceChildren();
+  catalog=await api('/api/catalog');
+  catalog.models.forEach(m=>['source','target'].forEach(id=>option($(id),m.id,`${m.name} · ${m.id}`)));
+  for(const id of ['sourceApi','targetApi']){const previous=$(id).value;$(id).replaceChildren();Object.entries(catalog.apis).forEach(([key,label])=>option($(id),key,label));$(id).value=previous||'converse'}
+  $('source').value=catalog.models.find(m=>m.provider==='Claude')?.id||'';
+  $('target').value=catalog.models.find(m=>m.provider==='GPT')?.id||'';
+  $('catalogInfo').textContent=`实时目录：${catalog.models.filter(m=>m.provider==='Claude').length} 个 Claude / ${catalog.models.filter(m=>m.provider==='GPT').length} 个 GPT 调用选项。包括美国推理配置与区域内按需模型，不包含专用 safeguard 模型；刷新页面可重新加载。`;
+  $('endpoint').textContent=`${catalog.api} · ${catalog.endpoint}`;
+  Object.entries(catalog.scenarios).forEach(([id,s])=>option($('scenario'),id,s.name));
+  scenario();preset();$('run').disabled=!$('source').value||!$('target').value;
+  $('status').textContent='请选择迁移前后的模型。目录可见不代表已验证全部场景支持。';
+ }catch(e){$('run').disabled=true;$('status').textContent=`加载失败：${e.message}。模型目录权限问题需由部署管理员检查。`}
+}
+function showLogin(){
+ $('account').hidden=true;$('workspace').hidden=true;$('loginPanel').hidden=false;
+ report=null;$('results').replaceChildren();$('export').disabled=true;
+}
+async function signedIn(user){
+ $('account').hidden=false;$('loginPanel').hidden=true;$('workspace').hidden=false;
+ $('signedIn').textContent=`已登录：${user.username}`;
+ $('password').value='';await loadCatalog();
+}
+$('loginForm').onsubmit=async event=>{
+ event.preventDefault();$('loginButton').disabled=true;$('loginStatus').textContent='正在登录…';
+ try{
+  const user=await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('username').value,password:$('password').value})});
+  $('loginStatus').textContent='';await signedIn(user);
+ }catch(e){$('loginStatus').textContent=e.message}
+ finally{$('password').value='';$('loginButton').disabled=false}
+};
+$('logout').onclick=async()=>{
+ try{await api('/api/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});showLogin()}
+ catch(e){$('status').textContent=e.message}
+};
+$('connect').onclick=loadCatalog;
+sessionStorage.removeItem('demoToken');
+api('/api/session').then(signedIn).catch(e=>{$('loginStatus').textContent=e.message});
+</script>
+</body>
+</html>
